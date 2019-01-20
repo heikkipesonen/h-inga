@@ -15,19 +15,34 @@ interface ItemState {
   y: number
 }
 
-export class CanvasItem extends React.PureComponent<ItemProps, ItemState> {
+export class CanvasItem extends React.Component<ItemProps, ItemState> {
   constructor(props: ItemProps) {
     super(props)
+
     this.state = {
       x: props.model.x,
-      y: props.model.y,
+      y: props.model.y
     }
+  }
+
+  public shouldComponentUpdate = (nextProps: ItemProps, nextState: ItemState) =>
+    nextState.x !== this.state.x ||
+    nextState.y !== this.state.y ||
+    nextProps.scale !== this.props.scale
+
+  public componentDidUpdate = () => {
+    this.handleModelUpdate(this.props.model)(this.state)
   }
 
   private handleChange = ({ x, y }: Position) => this.setState((state) => ({
     x: state.x + x,
     y: state.y + y
   }))
+
+  private handleModelUpdate = (model: CanvasObject) => (p: Position) => {
+    model.x = p.x
+    model.y = p.y
+  }
 
   private getRenderObject = (): React.ReactNode => {
     const { model } = this.props
@@ -59,8 +74,8 @@ export class CanvasItem extends React.PureComponent<ItemProps, ItemState> {
         model={o}
         scale={scale}
         parent={model}
-      />)
-    )
+      />
+    ))
   }
 
   public render() {
@@ -79,7 +94,7 @@ export class CanvasItem extends React.PureComponent<ItemProps, ItemState> {
             x2={-x}
             y2={-y}
             style={{
-              strokeWidth: 2,
+              strokeWidth: 2 / this.props.scale,
               stroke: "#d00"
             }}
           />

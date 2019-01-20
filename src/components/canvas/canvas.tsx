@@ -3,22 +3,25 @@ import styled from "styled-components";
 import {
   Pointer,
   getMousePointer,
-  getMouseWheel,
-  delta,
-  getPointerOnCanvas
+  calcDragEvent,
+  calcZoomEvent
 } from "./pointer";
 import { addEventListener } from './listener'
+import { getCanvasBounds, Bounds } from '../../utils/canvas'
 
 interface Props {
   children: (state: State) => React.ReactNode
 }
 
-interface State {
+export interface State {
   x: number
   y: number
+  width: number
+  height: number
   scale: number
   onDrag: boolean
   lastEvent: Pointer | null
+  bounds: Bounds
 }
 
 const CanvasContainer = styled.div`
@@ -30,18 +33,39 @@ const CanvasContainer = styled.div`
     background-color: #ddd;
     overflow: hidden;
 `
+export class Canvas extends React.Component<Props, State> {
 
-export class Canvas extends React.PureComponent<Props, State> {
-
-  public state = {
+  public state: State = {
     x: 0,
     y: 0,
+    width: 0,
+    height: 0,
     scale: 1,
     onDrag: false,
-    lastEvent: null
+    lastEvent: null,
+    bounds: new Bounds(0, 0, 0, 0)
+  }
+
+  public shouldComponentUpdate = (nextProps: Props, nextState: State) => {
+    return nextState.x !== this.state.x ||
+      nextState.y !== this.state.y ||
+      nextState.scale !== this.state.scale
   }
 
   private unbinders: Array<() => void> = []
+
+  private setPosition = (x: number, y: number, scale?: number) =>
+    this.setState((state) => ({
+      x,
+      y,
+      scale: scale ? scale : state.scale,
+      bounds: getCanvasBounds({
+        ...state,
+        x,
+        y,
+        scale: scale ? scale : state.scale,
+      })
+    }))
 
   public onDragStart = (event: MouseEvent) => {
     const position = getMousePointer(event)
@@ -55,49 +79,42 @@ export class Canvas extends React.PureComponent<Props, State> {
   public onDrag = (event: MouseEvent) => {
     const { lastEvent, onDrag } = this.state
     if (onDrag && lastEvent) {
-      const position = getMousePointer(event)
-      const d = delta(lastEvent, position);
-      const { state: { x, y } } = this;
+      const { x, y } = this.state
+      const nextPosition = calcDragEvent(event, lastEvent, { x, y, scale: 1 })
 
-      const nextPosition = {
-        x: d.x + x,
-        y: d.y + y,
-      }
+      this.setPosition(nextPosition.x, nextPosition.y)
 
-      this.setState({
-        ...nextPosition,
-        lastEvent: position
-      })
+      this.setState(() => ({
+        lastEvent: getMousePointer(event)
+      }))
     }
   }
 
   public onDragEnd = (event: MouseEvent) => {
-    this.setState({
+    this.setState(() => ({
       lastEvent: null,
       onDrag: false
-    })
+    }))
   }
 
   public zoom = (event: MouseWheelEvent) => {
     const { scale, x, y } = this.state
-    const dScale = scale * getMouseWheel(event) / 1800
-    const newScale = scale + dScale
-    const cursor = getMousePointer(event)
-    const initialPosition = getPointerOnCanvas(cursor, { x, y, scale })
-    const newCursorPosition = getPointerOnCanvas(cursor, { x, y, scale: newScale })
+    const nextPosition = calcZoomEvent({ scale, x, y}, event)
 
-    const newCanvasPosition = {
-      x: x + (newCursorPosition.x - initialPosition.x) * newScale,
-      y: y + (newCursorPosition.y - initialPosition.y) * newScale,
-      scale: newScale
-    }
-
-    this.setState(newCanvasPosition)
+    this.setPosition(
+      nextPosition.x,
+      nextPosition.y,
+      nextPosition.scale
+    )
   }
 
   public setContainer = (el: any) => {
     const { onDragStart, onDrag, onDragEnd, zoom } = this;
     if (el) {
+      this.setState(() => ({
+        width: el.parentNode.offsetWidth,
+        height: el.parentNode.offsetHeight,
+      }))
       this.unbinders = [
         addEventListener(el, 'mousedown', onDragStart),
         addEventListener(window, 'mousemove', onDrag),
@@ -111,20 +128,14 @@ export class Canvas extends React.PureComponent<Props, State> {
     this.unbinders.forEach((unbind) => unbind())
   }
 
-  public getSvgTransform = (): string => {
-    const { state: { x, y, scale } } = this
-    return `translate(${x}, ${y}) scale(${scale}, ${scale})`
-  }
-
   public render() {
     const { children } = this.props
     const { setContainer, state } = this
-    const canvasPosition = this.getSvgTransform();
 
     return (
       <CanvasContainer>
         <svg style={{ width: "100%", height: "100%" }} ref={setContainer}>
-          <g transform={canvasPosition}>
+          <g transform={`translate(${state.x}, ${state.y}) scale(${state.scale}, ${state.scale})`}>
             {children(state)}
           </g>
         </svg>
