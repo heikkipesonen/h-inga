@@ -7,13 +7,13 @@ interface Props {
   x: number
   y: number
   r: number
-  scale: number
   style?: Style,
+  scale: number
   onChange?: (event: Position) => void
 }
 
-export const Circle = ({ x, y, r, scale, onChange, style = {} }: Props) => (
-  <Draggable scale={scale} x={x} y={y} onChange={onChange} {...style}>
-    <circle r={r} x={x} y={y} />
+export const Circle = React.memo(({x, y, r, style, scale, onChange }: Props) => (
+  <Draggable scale={scale} x={x} y={y} onChange={onChange}>
+    <circle r={r} cx={0} cy={0} {...style} />
   </Draggable>
-);
+));

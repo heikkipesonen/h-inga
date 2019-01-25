@@ -1,42 +1,7 @@
 import { CanvasObject, Position } from '../types/object'
 import { State as CanvasState } from '../components/canvas/canvas'
+import { Bounds } from './bounds';
 
-export class Bounds {
-  constructor(
-    public x: number = 0,
-    public y: number = 0,
-    public x2: number = 0,
-    public y2: number = 0,
-  ) { }
-
-  get width() {
-    return this.x2 - this.x
-  }
-
-  get height() {
-    return this.y2 - this.y
-  }
-
-  public extend = ({ x, y }: Position) => {
-    return new Bounds(
-      Math.min(this.x, x),
-      Math.min(this.y, y),
-      Math.max(this.x2, x),
-      Math.max(this.y2, y),
-    )
-  }
-
-  public contains = ({ x, y }: Position) =>
-    this.x >= x && this.x2 <= x && this.y >= y && this.y2 <= y
-
-  public scale = (factor: number) =>
-    new Bounds(
-      this.x / factor,
-      this.y / factor,
-      this.x2 / factor,
-      this.y2 / factor
-    )
-}
 
 export const getCanvasBounds = (s: CanvasState) => new Bounds(
   s.x,
@@ -44,13 +9,6 @@ export const getCanvasBounds = (s: CanvasState) => new Bounds(
   s.x + s.width,
   s.y + s.height
 ).scale(s.scale)
-
-export const getVisible = (b: Bounds) => (items: CanvasObject[]) =>
-  items.filter(() => {
-    return 1
-  })
-
-export const getBounds = (items: CanvasObject[]) => { }
 
 export const getAbsolute = ({children, ...root}: CanvasObject) => {
   if (!children) {
@@ -68,3 +26,36 @@ export const getAbsolute = ({children, ...root}: CanvasObject) => {
     })
   }
 }
+
+type FlatRender = Record<string, CanvasObject>
+
+export const flatten = (
+  src: CanvasObject[],
+  p: Position = { x: 0, y: 0 }
+): FlatRender =>
+  src.reduce((model, o) => {
+    const { x, y } = p
+
+    const offsetPosition: Position = {
+      x: x + o.x,
+      y: y + o.y
+    }
+
+    const children = o.children && flatten(o.children, offsetPosition)
+
+    model[o.id] = {
+      ...o,
+      ...offsetPosition
+    }
+
+    return {
+      ...model,
+      ...children
+    }
+  }, {})
+
+export const getVisible = (v: FlatRender, b: Bounds) =>
+  Object.keys(v).filter((key) => {
+    const o = v[key]
+    return b.contains({x: o.x, y: o.y })
+  }).map((k) => v[k])

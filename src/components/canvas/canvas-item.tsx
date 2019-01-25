@@ -1,7 +1,6 @@
 import * as React from 'react'
-import { CanvasObject } from '../../types/object'
+import { CanvasObject, Position } from "../../types/object"
 import * as Objects from './objects'
-import { Position } from '../../types/object'
 
 interface ItemProps {
   scale: number
@@ -15,7 +14,7 @@ interface ItemState {
   y: number
 }
 
-export class CanvasItem extends React.Component<ItemProps, ItemState> {
+export class CanvasItem extends React.PureComponent<ItemProps, ItemState> {
   constructor(props: ItemProps) {
     super(props)
 
@@ -55,6 +54,9 @@ export class CanvasItem extends React.Component<ItemProps, ItemState> {
             r={model.r}
             scale={this.props.scale}
             onChange={this.handleChange}
+            style={{
+              fill: '#444'
+            }}
           />
         )
       case 'Line':
@@ -95,7 +97,7 @@ export class CanvasItem extends React.Component<ItemProps, ItemState> {
             y2={-y}
             style={{
               strokeWidth: 2 / this.props.scale,
-              stroke: "#d00"
+              stroke: "#777"
             }}
           />
         )}

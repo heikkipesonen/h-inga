@@ -53,4 +53,3 @@ export class WithState<T> extends PureComponent<PropTypes<T>, T> {
     })
   }
 }
-

@@ -1,5 +1,5 @@
 import React from "react";
-import WithState from "./withstate";
+import { WithState } from "./withstate";
 import { mount } from "enzyme";
 
 describe("WithState", () => {
@@ -9,7 +9,7 @@ describe("WithState", () => {
     };
 
     const el = mount(
-      <WithState initialState={initialState}>
+      <WithState state={initialState}>
         {({ state }) => <div>{state.cat}</div>}
       </WithState>
     );
@@ -23,7 +23,7 @@ describe("WithState", () => {
     };
 
     const el = mount(
-      <WithState initialState={initialState}>
+      <WithState state={initialState}>
         {({ state, setState }) => (
           <div>
             <div className="text">{state.cat}</div>
@@ -44,7 +44,7 @@ describe("WithState", () => {
     };
 
     const el = mount(
-      <WithState initialState={initialState}>
+      <WithState state={initialState}>
         {({ state, setState }) => (
           <div>
             <div className="text">{state.cat}</div>
@@ -57,12 +57,12 @@ describe("WithState", () => {
     expect(el.find(".text").text()).toEqual("1");
 
     el.setProps({
-      initialState: {
-        cat: 2
+      state: {
+        cat: 3
       }
     });
 
-    expect(el.find(".text").text()).toEqual("2");
+    expect(el.find(".text").text()).toEqual("3");
   });
 
   it("should call onChange when updating state", () => {
@@ -72,7 +72,7 @@ describe("WithState", () => {
     const onChange = jest.fn();
 
     const el = mount(
-      <WithState initialState={initialState} onChange={onChange}>
+      <WithState state={initialState} onChange={onChange}>
         {({ state, setState }) => (
           <div>
             <div className="text">{state.cat}</div>

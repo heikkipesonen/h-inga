@@ -9,7 +9,7 @@ interface Props {
   style?: Style
 }
 
-export const SimpleLine = ({ x, y, x2, y2, style }: Props) => (
+export const SimpleLine = React.memo(({ x, y, x2, y2, style }: Props) => (
   <line
     x1={x}
     y1={y}
@@ -17,4 +17,4 @@ export const SimpleLine = ({ x, y, x2, y2, style }: Props) => (
     y2={y2}
     {...style}
   />
-)
+))

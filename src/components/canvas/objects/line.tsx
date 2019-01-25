@@ -18,7 +18,7 @@ export interface Props {
     onChange: (event: LineOnChangeEvent) => void
 }
 
-class Line extends React.PureComponent<Props> {
+export class Line extends React.PureComponent<Props> {
 
     public moveStartVertex = (event: Position) => {
         const { onChange, ...props } = this.props
@@ -55,5 +55,3 @@ class Line extends React.PureComponent<Props> {
         )
     }
 }
-
-export default Line

@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { Canvas, CanvasItem } from "./canvas"
+import { Canvas } from "./canvas"
+import { FlatRender } from './canvas/objects/flat-render'
 
 import { data } from '../mock'
 
@@ -8,15 +9,9 @@ export class CanvasView extends React.Component {
   public render() {
     return (
       <Canvas>
-        {({ scale }) =>
-          data.objects.map((object) => (
-            <CanvasItem
-              key={object.id}
-              model={object}
-              scale={scale}
-            />
-          ))
-        }
+        {(state) => (
+          <FlatRender bounds={state.bounds} src={data.objects} />
+        )}
       </Canvas>
     )
   }

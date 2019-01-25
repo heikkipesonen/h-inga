@@ -7,7 +7,7 @@ import {
   calcZoomEvent
 } from "./pointer";
 import { addEventListener } from './listener'
-import { getCanvasBounds, Bounds } from '../../utils/canvas'
+import { Bounds } from 'src/utils/bounds';
 
 interface Props {
   children: (state: State) => React.ReactNode
@@ -33,6 +33,15 @@ const CanvasContainer = styled.div`
     background-color: #ddd;
     overflow: hidden;
 `
+
+let timer: any = null
+const debounce = (fn: (a: any) => any) => {
+  if (timer) {
+    clearTimeout(timer)
+  }
+  timer = setTimeout(fn, 200)
+}
+
 export class Canvas extends React.Component<Props, State> {
 
   public state: State = {
@@ -46,25 +55,18 @@ export class Canvas extends React.Component<Props, State> {
     bounds: new Bounds(0, 0, 0, 0)
   }
 
-  public shouldComponentUpdate = (nextProps: Props, nextState: State) => {
-    return nextState.x !== this.state.x ||
-      nextState.y !== this.state.y ||
-      nextState.scale !== this.state.scale
-  }
-
   private unbinders: Array<() => void> = []
+
+  public shouldComponentUpdate = (nextProps: Props, nextState: State) =>
+    nextState.x !== this.state.x ||
+    nextState.y !== this.state.y ||
+    nextState.bounds !== this.state.bounds
 
   private setPosition = (x: number, y: number, scale?: number) =>
     this.setState((state) => ({
       x,
       y,
-      scale: scale ? scale : state.scale,
-      bounds: getCanvasBounds({
-        ...state,
-        x,
-        y,
-        scale: scale ? scale : state.scale,
-      })
+      scale: scale ? scale : state.scale
     }))
 
   public onDragStart = (event: MouseEvent) => {
@@ -75,6 +77,14 @@ export class Canvas extends React.Component<Props, State> {
       onDrag: true
     })
   }
+
+  private getBounds = () =>
+    new Bounds(
+      -this.state.x / this.state.scale,
+      -this.state.y / this.state.scale,
+      (this.state.width - this.state.x) / this.state.scale,
+      (this.state.height - this.state.y) / this.state.scale
+    )
 
   public onDrag = (event: MouseEvent) => {
     const { lastEvent, onDrag } = this.state
@@ -93,33 +103,50 @@ export class Canvas extends React.Component<Props, State> {
   public onDragEnd = (event: MouseEvent) => {
     this.setState(() => ({
       lastEvent: null,
-      onDrag: false
+      onDrag: false,
+      bounds: this.getBounds()
     }))
   }
 
   public zoom = (event: MouseWheelEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+
     const { scale, x, y } = this.state
     const nextPosition = calcZoomEvent({ scale, x, y}, event)
 
     this.setPosition(
       nextPosition.x,
       nextPosition.y,
-      nextPosition.scale
+      nextPosition.scale,
     )
+
+    debounce(() => {
+      this.setState(() => ({
+        bounds: this.getBounds()
+      }))
+    })
   }
 
   public setContainer = (el: any) => {
     const { onDragStart, onDrag, onDragEnd, zoom } = this;
     if (el) {
-      this.setState(() => ({
+      this.setState(state => ({
         width: el.parentNode.offsetWidth,
         height: el.parentNode.offsetHeight,
+        bounds: new Bounds(
+          -state.x / state.scale,
+          -state.y / state.scale,
+          el.parentNode.offsetWidth / state.scale,
+          el.parentNode.offsetHeight / state.scale
+        )
       }))
       this.unbinders = [
         addEventListener(el, 'mousedown', onDragStart),
         addEventListener(window, 'mousemove', onDrag),
         addEventListener(window, 'mouseup', onDragEnd),
-        addEventListener(window, 'mousewheel', zoom)
+        addEventListener(window, 'mousewheel', zoom),
+        addEventListener(window, 'wheel', zoom)
       ]
     }
   }
