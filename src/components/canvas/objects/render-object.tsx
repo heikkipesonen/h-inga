@@ -1,18 +1,23 @@
 import * as React from 'react'
 import { CanvasObject } from 'src/types/object';
 
+import { Circle } from './circle'
+import { SimpleLine } from './simple-line'
+
 export const getRenderObject = (o: CanvasObject) => {
   switch (o.kind) {
     case "Circle":
       return (
-        <circle
+        <Circle
           key={`object_${o.id}`}
-          cx={o.x}
-          cy={o.y}
+          x={o.x}
+          y={o.y}
           r={o.r}
-          fill="none"
-          stroke="#d00"
-          strokeWidth="1px"
+          style={{
+            fill: "rgba(255, 0, 0, 0.3)",
+            stroke: "#d00",
+            strokeWidth: "1px"
+          }}
         />
       )
     case 'Line':
@@ -27,13 +32,15 @@ export const getRenderObject = (o: CanvasObject) => {
 export const renderChildLines = (o: CanvasObject) =>
   o.children &&
   o.children.map(c => (
-    <line
+    <SimpleLine
       key={`child_${c.id}`}
-      x1={o.x}
-      y1={o.y}
+      x={o.x}
+      y={o.y}
       x2={c.x + o.x}
       y2={c.y + o.y}
-      stroke="#d00"
-      strokeWidth="1px"
+      style={{
+        stroke: '#d00',
+        strokeWidth: '1px'
+      }}
     />
   ))
