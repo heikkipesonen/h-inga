@@ -23,7 +23,7 @@ describe("draggable", () => {
     })
 
     it("adds listeners", () => {
-      expect(el.instance().unbinders).toHaveLength(3)
+      expect(el.instance().unbinders).toHaveLength(5)
     })
   })
 

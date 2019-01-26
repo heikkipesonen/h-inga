@@ -1,14 +1,18 @@
 import * as React from "react"
-import { Pointer, getMousePointer, calcDragEvent } from "../pointer"
+import { Pointer, getMousePointer, calcDragEvent, calcZoomEvent } from "../pointer"
 import { addEventListener } from "../listener"
 import { Position } from "../../../types/object"
+import { globalState } from '../global-state';
 
 interface Props {
   children: React.ReactNode
-  scale: number
   x: number
   y: number
-  onChange?: (event: Position) => void
+  onChange: (event: Position) => void
+  onDragEnd?: () => void
+  onDrag?: Pointer
+  scalable?: boolean
+  disabled?: boolean
 }
 
 interface State {
@@ -17,9 +21,9 @@ interface State {
 }
 
 export class Draggable extends React.Component<Props, State> {
-  public state = {
-    onDrag: false,
-    lastEvent: null
+  public state: State = {
+    onDrag: !!this.props.onDrag,
+    lastEvent: this.props.onDrag || null
   }
 
   public ref: HTMLElement | null = null
@@ -38,11 +42,15 @@ export class Draggable extends React.Component<Props, State> {
   }
 
   public onDrag = (event: MouseEvent) => {
+    event.stopImmediatePropagation()
+    event.stopPropagation()
+    event.preventDefault()
+
     const { lastEvent, onDrag } = this.state
     const { onChange } = this.props
-
     if (onDrag && lastEvent) {
-      const { scale, x, y } = this.props
+      const { scale } = globalState
+      const { x, y } = this.props
       const nextPosition = calcDragEvent(event, lastEvent, { x, y, scale })
       const position = getMousePointer(event)
 
@@ -50,33 +58,47 @@ export class Draggable extends React.Component<Props, State> {
         lastEvent: position
       }))
 
-      if (onChange) {
-        onChange(nextPosition)
-      }
+      onChange(nextPosition)
     }
+  }
+
+  public zoom = (event: MouseWheelEvent) => {
+    if (this.props.disabled || !this.props.scalable) {
+      return
+    }
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    const { scale } = globalState
+    const { x, y, onChange } = this.props
+    const nextPosition = calcZoomEvent({ scale, x, y }, event)
+    onChange(nextPosition)
   }
 
   public onDragEnd = (event: MouseEvent) => {
     this.setState(() => ({
       lastEvent: null,
       onDrag: false
-    }))
+    }), () => this.props.onDragEnd ? this.props.onDragEnd() : null)
   }
 
   public setContainer = (el: any) => {
-    const { onDragStart, onDrag, onDragEnd } = this
+    const { onDragStart, onDrag, onDragEnd, zoom } = this
     if (el) {
       this.ref = el
       this.unbinders = [
         addEventListener(el, "mousedown", onDragStart),
         addEventListener(window, "mousemove", onDrag),
-        addEventListener(window, "mouseup", onDragEnd)
+        addEventListener(window, "mouseup", onDragEnd),
+        addEventListener(el, "mousewheel", zoom),
+        addEventListener(el, "wheel", zoom)
       ]
     }
   }
 
   public componentWillUnmount() {
-    this.unbinders.forEach(unbind => unbind())
+    this.unbinders.forEach(u => u())
   }
 
   public render() {

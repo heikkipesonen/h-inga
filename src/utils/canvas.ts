@@ -27,12 +27,12 @@ export const getAbsolute = ({children, ...root}: CanvasObject) => {
   }
 }
 
-type FlatRender = Record<string, CanvasObject>
+type FlatMap = Record<string, CanvasObject>
 
 export const flatten = (
   src: CanvasObject[],
   p: Position = { x: 0, y: 0 }
-): FlatRender =>
+): FlatMap =>
   src.reduce((model, o) => {
     const { x, y } = p
 
@@ -54,8 +54,24 @@ export const flatten = (
     }
   }, {})
 
-export const getVisible = (v: FlatRender, b: Bounds) =>
+
+export const getObjectFamilyIdList = (o: CanvasObject): string[] =>
+  [
+    o.id,
+    ...(o.children ? o.children.reduce((r, o) => [...r, ...getObjectFamilyIdList(o)], []) : [])
+  ]
+
+
+export const getVisible = (v: FlatMap, b: Bounds) =>
   Object.keys(v).filter((key) => {
     const o = v[key]
     return b.contains({x: o.x, y: o.y })
   }).map((k) => v[k])
+
+export const applyPosition = (o: CanvasObject, p: Position): CanvasObject => {
+  return {
+    ...o,
+    x: o.x + p.x,
+    y: o.y + p.y
+  }
+}

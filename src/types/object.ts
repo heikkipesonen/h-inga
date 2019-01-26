@@ -9,6 +9,7 @@ export interface Style {
 export interface Position {
   x: number
   y: number
+  scale?: number
 }
 
 export interface BaseObject {
@@ -16,7 +17,7 @@ export interface BaseObject {
   x: number
   y: number
   children?: CanvasObject[]
-  style?: Style
+  style?: Style,
 }
 
 export interface Circle extends BaseObject {
@@ -34,4 +35,12 @@ export interface Vertex extends BaseObject {
   kind: 'Vertex'
 }
 
+export interface ObjectEventListeners {
+  onClick?: (e: React.MouseEvent<SVGElement>) => void
+  onMouseDown?: (e: React.MouseEvent<SVGElement>) => void
+  onMouseUp?: (e: React.MouseEvent<SVGElement>) => void
+}
+
 export type CanvasObject = Vertex | Circle | Line
+
+export type FlatMap = Record<string, CanvasObject>

@@ -17,13 +17,14 @@ const generateItems = (count: number = 10, spacing: number = 500) =>
   Array(Math.round(count)).fill(false).map(() => generateItem(spacing))
 
 const generate = () =>
-  generateItems(10, 10000).map(i => ({
+  generateItems(10, 1000).map(i => ({
     ...i,
-    children: generateItems(10, 1000).map(ic => ({
+    children: generateItems(5, 1000)
+      .map(ic => ({
       ...ic,
-      children: generateItems(5, 500).map(icc => ({
+      children: generateItems(2, 500).map(icc => ({
         ...icc,
-        children: generateItems(5, 100)
+        children: generateItems(2, 100)
       }))
     }))
   }))

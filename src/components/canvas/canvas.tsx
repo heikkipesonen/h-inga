@@ -8,6 +8,7 @@ import {
 } from "./pointer";
 import { addEventListener } from './listener'
 import { Bounds } from 'src/utils/bounds';
+import { globalState } from './global-state';
 
 interface Props {
   children: (state: State) => React.ReactNode
@@ -55,12 +56,17 @@ export class Canvas extends React.Component<Props, State> {
     bounds: new Bounds(0, 0, 0, 0)
   }
 
+  private el: any
   private unbinders: Array<() => void> = []
 
   public shouldComponentUpdate = (nextProps: Props, nextState: State) =>
     nextState.x !== this.state.x ||
     nextState.y !== this.state.y ||
     nextState.bounds !== this.state.bounds
+
+  public componentDidUpdate() {
+    globalState.scale = this.state.scale
+  }
 
   private setPosition = (x: number, y: number, scale?: number) =>
     this.setState((state) => ({
@@ -70,6 +76,10 @@ export class Canvas extends React.Component<Props, State> {
     }))
 
   public onDragStart = (event: MouseEvent) => {
+    if (event.srcElement !== this.el) {
+      return
+    }
+
     const position = getMousePointer(event)
 
     this.setState({
@@ -131,6 +141,7 @@ export class Canvas extends React.Component<Props, State> {
   public setContainer = (el: any) => {
     const { onDragStart, onDrag, onDragEnd, zoom } = this;
     if (el) {
+      this.el = el
       this.setState(state => ({
         width: el.parentNode.offsetWidth,
         height: el.parentNode.offsetHeight,

@@ -14,7 +14,6 @@ export interface Props {
     y1: number
     x2: number
     y2: number
-    scale: number
     onChange: (event: LineOnChangeEvent) => void
 }
 
@@ -43,14 +42,14 @@ export class Line extends React.PureComponent<Props> {
     }
 
     public render () {
-        const { x1, y1, x2, y2, scale } = this.props
+        const { x1, y1, x2, y2 } = this.props
         const { moveEndVertex, moveStartVertex } = this;
 
         return (
             <g className="line-group">
-                <Vertex x={x1} y={y1} scale={scale} onChange={moveStartVertex} />
+                <Vertex x={x1} y={y1} onChange={moveStartVertex} />
                 <line x1={x1} y1={y1} x2={x2} y2={y2} />
-                <Vertex x={x2} y={y2} scale={scale} onChange={moveEndVertex} />
+                <Vertex x={x2} y={y2} onChange={moveEndVertex} />
             </g>
         )
     }
