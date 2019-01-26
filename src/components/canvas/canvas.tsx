@@ -4,13 +4,18 @@ import {
   Pointer,
   getMousePointer,
   calcDragEvent,
-  calcZoomEvent
+  calcZoomEvent,
+  getPointerOnCanvas,
+  delta,
 } from "./pointer";
 import { addEventListener } from './listener'
 import { Bounds } from 'src/utils/bounds';
 import { globalState } from './global-state';
+import { fromNullable } from 'fp-ts/lib/Option';
+import { Position } from 'src/types/object';
 
 interface Props {
+  onClick?: (p: Position) => void
   children: (state: State) => React.ReactNode
 }
 
@@ -22,6 +27,7 @@ export interface State {
   scale: number
   onDrag: boolean
   lastEvent: Pointer | null
+  firstEvent: Pointer | null
   bounds: Bounds
 }
 
@@ -53,11 +59,29 @@ export class Canvas extends React.Component<Props, State> {
     scale: 1,
     onDrag: false,
     lastEvent: null,
+    firstEvent: null,
     bounds: new Bounds(0, 0, 0, 0)
   }
 
   private el: any
   private unbinders: Array<() => void> = []
+
+  public handleClick = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
+    if (this.state.firstEvent && this.state.lastEvent) {
+      const { dist } = delta(this.state.firstEvent!, this.state.lastEvent!)
+      if (dist > 20) {
+        return;
+      }
+
+      fromNullable(this.props.onClick).map(c => {
+        const p = getPointerOnCanvas(getMousePointer(e as any), this.state)
+        c({
+          x: p.x,
+          y: p.y
+        })
+      })
+    }
+  }
 
   public shouldComponentUpdate = (nextProps: Props, nextState: State) =>
     nextState.x !== this.state.x ||
@@ -68,26 +92,6 @@ export class Canvas extends React.Component<Props, State> {
     globalState.scale = this.state.scale
   }
 
-  private setPosition = (x: number, y: number, scale?: number) =>
-    this.setState((state) => ({
-      x,
-      y,
-      scale: scale ? scale : state.scale
-    }))
-
-  public onDragStart = (event: MouseEvent) => {
-    if (event.srcElement !== this.el) {
-      return
-    }
-
-    const position = getMousePointer(event)
-
-    this.setState({
-      lastEvent: position,
-      onDrag: true
-    })
-  }
-
   private getBounds = () =>
     new Bounds(
       -this.state.x / this.state.scale,
@@ -96,8 +100,28 @@ export class Canvas extends React.Component<Props, State> {
       (this.state.height - this.state.y) / this.state.scale
     )
 
+  private setPosition = (x: number, y: number, scale?: number) =>
+    this.setState((state) => ({
+      x,
+      y,
+      scale: scale ? scale : state.scale
+    }))
+
+  public onDragStart = (event: React.MouseEvent<SVGElement, MouseEvent>) => {
+    if (event.target === this.el) {
+      const position = getMousePointer(event as any)
+
+      this.setState(() => ({
+        firstEvent: position,
+        lastEvent: position,
+        onDrag: true
+      }))
+    }
+  }
+
   public onDrag = (event: MouseEvent) => {
     const { lastEvent, onDrag } = this.state
+
     if (onDrag && lastEvent) {
       const { x, y } = this.state
       const nextPosition = calcDragEvent(event, lastEvent, { x, y, scale: 1 })
@@ -112,7 +136,6 @@ export class Canvas extends React.Component<Props, State> {
 
   public onDragEnd = (event: MouseEvent) => {
     this.setState(() => ({
-      lastEvent: null,
       onDrag: false,
       bounds: this.getBounds()
     }))
@@ -139,7 +162,7 @@ export class Canvas extends React.Component<Props, State> {
   }
 
   public setContainer = (el: any) => {
-    const { onDragStart, onDrag, onDragEnd, zoom } = this;
+    const { onDrag, onDragEnd, zoom } = this;
     if (el) {
       this.el = el
       this.setState(state => ({
@@ -153,7 +176,6 @@ export class Canvas extends React.Component<Props, State> {
         )
       }))
       this.unbinders = [
-        addEventListener(el, 'mousedown', onDragStart),
         addEventListener(window, 'mousemove', onDrag),
         addEventListener(window, 'mouseup', onDragEnd),
         addEventListener(window, 'mousewheel', zoom),
@@ -172,7 +194,11 @@ export class Canvas extends React.Component<Props, State> {
 
     return (
       <CanvasContainer>
-        <svg style={{ width: "100%", height: "100%" }} ref={setContainer}>
+        <svg style={{ width: "100%", height: "100%" }}
+          onMouseDown={this.onDragStart}
+          ref={setContainer}
+          onClick={this.handleClick}
+        >
           <g transform={`translate(${state.x}, ${state.y}) scale(${state.scale}, ${state.scale})`}>
             {children(state)}
           </g>

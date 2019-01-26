@@ -1,22 +1,11 @@
 import * as React from 'react'
 import styled from 'styled-components'
-import { ModalStateControl } from './modal-controller'
+import { ModalControls } from './modal-controller'
 
 interface Props {
-  controls: ModalStateControl,
+  controls: ModalControls,
   children: React.ReactNode,
 }
-
-export const Modal = ({ controls, children }: Props) => controls.state.open ? (
-  <ModalContainer>
-    <div className="modal--backdrop" onClick={controls.reject} />
-    <div className="modal--container">
-      <div className="modal-body">
-        { children }
-      </div>
-    </div>
-  </ModalContainer>
-) : null
 
 export const ModalContainer = styled.div`
   position: fixed;
@@ -42,3 +31,25 @@ export const ModalContainer = styled.div`
 
   }
 `
+export class Modal extends React.PureComponent<Props> {
+
+  private handleReject() {
+    const { controls } = this.props
+    controls.reject.map(r => r())
+  }
+
+  public render() {
+    const { controls, children } = this.props
+
+    return controls.state.open && (
+      <ModalContainer>
+        <div className="modal--backdrop" onClick={this.handleReject} />
+        <div className="modal--container">
+          <div className="modal-body">
+            {children}
+          </div>
+        </div>
+      </ModalContainer>
+    )
+  }
+}

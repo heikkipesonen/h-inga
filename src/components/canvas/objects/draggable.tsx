@@ -13,6 +13,7 @@ interface Props {
   onDrag?: Pointer
   scalable?: boolean
   disabled?: boolean
+  interactive?: boolean
 }
 
 interface State {
@@ -29,41 +30,46 @@ export class Draggable extends React.Component<Props, State> {
   public ref: HTMLElement | null = null
   private unbinders: Array<() => void> = []
 
-  public onDragStart = (event: MouseEvent) => {
+  public onDragStart = (event: React.MouseEvent<SVGElement, MouseEvent>) => {
     event.stopPropagation()
     event.preventDefault()
 
-    const position = getMousePointer(event)
+    if (this.props.interactive) {
+      const position = getMousePointer(event as any)
 
-    this.setState(() => ({
-      lastEvent: position,
-      onDrag: true
-    }))
+      this.setState(() => ({
+        lastEvent: position,
+        onDrag: true
+      }))
+
+    }
   }
 
   public onDrag = (event: MouseEvent) => {
-    event.stopImmediatePropagation()
-    event.stopPropagation()
-    event.preventDefault()
+    if (this.props.interactive) {
+      const { lastEvent, onDrag } = this.state
+      const { onChange } = this.props
+      if (onDrag && lastEvent) {
+        event.stopImmediatePropagation()
+        event.stopPropagation()
+        event.preventDefault()
 
-    const { lastEvent, onDrag } = this.state
-    const { onChange } = this.props
-    if (onDrag && lastEvent) {
-      const { scale } = globalState
-      const { x, y } = this.props
-      const nextPosition = calcDragEvent(event, lastEvent, { x, y, scale })
-      const position = getMousePointer(event)
+        const { scale } = globalState
+        const { x, y } = this.props
+        const nextPosition = calcDragEvent(event, lastEvent, { x, y, scale })
+        const position = getMousePointer(event)
 
-      this.setState(() => ({
-        lastEvent: position
-      }))
+        this.setState(() => ({
+          lastEvent: position
+        }))
 
-      onChange(nextPosition)
+        onChange(nextPosition)
+      }
     }
   }
 
   public zoom = (event: MouseWheelEvent) => {
-    if (this.props.disabled || !this.props.scalable) {
+    if (!this.props.interactive || !this.props.scalable) {
       return
     }
 
@@ -77,18 +83,19 @@ export class Draggable extends React.Component<Props, State> {
   }
 
   public onDragEnd = (event: MouseEvent) => {
-    this.setState(() => ({
-      lastEvent: null,
-      onDrag: false
-    }), () => this.props.onDragEnd ? this.props.onDragEnd() : null)
+    if (this.props.interactive) {
+      this.setState(() => ({
+        lastEvent: null,
+        onDrag: false
+      }), () => this.props.onDragEnd ? this.props.onDragEnd() : null)
+    }
   }
 
   public setContainer = (el: any) => {
-    const { onDragStart, onDrag, onDragEnd, zoom } = this
+    const { onDrag, onDragEnd, zoom } = this
     if (el) {
       this.ref = el
       this.unbinders = [
-        addEventListener(el, "mousedown", onDragStart),
         addEventListener(window, "mousemove", onDrag),
         addEventListener(window, "mouseup", onDragEnd),
         addEventListener(el, "mousewheel", zoom),
@@ -105,7 +112,7 @@ export class Draggable extends React.Component<Props, State> {
     const { children, x, y } = this.props
     const { setContainer } = this
 
-    return <g ref={setContainer} transform={`translate(${x}, ${y})`}>
+    return <g ref={setContainer} transform={`translate(${x}, ${y})`} onMouseDown={this.onDragStart}>
         {children}
       </g>
   }

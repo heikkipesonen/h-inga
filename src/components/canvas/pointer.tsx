@@ -2,7 +2,11 @@ export interface Pointer {
   x: number
   y: number
   timeStamp: number
-  velocity?: number
+}
+
+export interface Delta extends Pointer {
+  dist: number
+  velocity: number
 }
 
 export const getMousePointer = (
@@ -21,9 +25,10 @@ export const getTouchPointer = (evt: TouchEvent): Pointer => ({
 
 export const getMouseWheel = (evt: WheelEvent): number => -evt.deltaY
 
-export const delta = (a: Pointer, b: Pointer): Pointer => ({
+export const delta = (a: Pointer, b: Pointer): Delta => ({
   x: b.x - a.x,
   y: b.y - a.y,
+  dist: Math.hypot(b.x - a.x, b.y - a.y),
   timeStamp: b.timeStamp - a.timeStamp,
   velocity: Math.hypot(b.x - a.x, b.y - a.y) / (b.timeStamp - a.timeStamp)
 })

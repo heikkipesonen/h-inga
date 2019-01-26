@@ -1,7 +1,7 @@
-import { CanvasObject } from './object'
+import { FlatMap } from './object'
 
 export interface Project {
   id: string,
   name: string,
-  objects: CanvasObject[]
+  objects: FlatMap
 }

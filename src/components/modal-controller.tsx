@@ -1,17 +1,17 @@
 import * as React from 'react'
-
+import { Option , some, none } from 'fp-ts/lib/Option'
 interface Props {
-  children: (controls: ModalStateControl) => React.ReactNode
+  children: (controls: ModalControls) => React.ReactNode
 }
 
 interface State {
   open: boolean,
 }
 
-export interface ModalStateControl {
+export interface ModalControls {
   open: () => Promise<any>
-  resolve: () => void
-  reject: () => void
+  resolve: Option<() => void>
+  reject: Option<() => void>
   state: State
 }
 
@@ -21,22 +21,22 @@ export class ModalController extends React.PureComponent<Props, State>{
     open: false
   }
 
-  private resolve: any
-  private reject: any
+  private resolve: Option<() => any> = none
+  private reject: Option<() => any> = none
 
   private open = () => new Promise((resolve, reject) => {
     this.setState(() => ({ open: true}))
-    this.resolve = resolve
-    this.reject = reject
+    this.resolve = some(resolve)
+    this.reject = some(reject)
   }).then((data: any) => {
     this.setState(() => ({ open: false }))
-    this.resolve = null
-    this.reject = null
+    this.resolve = none
+    this.reject = none
     return data
   }, (data) => {
     this.setState(() => ({ open: false }))
-    this.resolve = null
-    this.reject = null
+    this.resolve = none
+    this.reject = none
     return Promise.reject(data)
   })
 
