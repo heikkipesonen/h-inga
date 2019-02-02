@@ -6,13 +6,6 @@ const ToolbarContainer = styled.div`
   background-color: #4c4c4c;
   display: flex;
   flex-direction: column;
-
-  button {
-    width: 100%;
-    height: 64px;
-    background-color: transparent;
-    border: none;
-  }
 `
 
 interface Props {
