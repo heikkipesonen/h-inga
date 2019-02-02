@@ -63,7 +63,6 @@ export class Canvas extends React.Component<Props, State> {
     bounds: new Bounds(0, 0, 0, 0)
   }
 
-  private el: any
   private unbinders: Array<() => void> = []
 
   public handleClick = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
@@ -74,7 +73,7 @@ export class Canvas extends React.Component<Props, State> {
       }
 
       fromNullable(this.props.onClick).map(c => {
-        const p = getPointerOnCanvas(getMousePointer(e as any), this.state)
+        const p = getPointerOnCanvas(getMousePointer(e), this.state)
         c({
           x: p.x,
           y: p.y
@@ -108,15 +107,13 @@ export class Canvas extends React.Component<Props, State> {
     }))
 
   public onDragStart = (event: React.MouseEvent<SVGElement, MouseEvent>) => {
-    if (event.target === this.el) {
-      const position = getMousePointer(event as any)
+    const position = getMousePointer(event)
 
-      this.setState(() => ({
-        firstEvent: position,
-        lastEvent: position,
-        onDrag: true
-      }))
-    }
+    this.setState(() => ({
+      firstEvent: position,
+      lastEvent: position,
+      onDrag: true
+    }))
   }
 
   public onDrag = (event: MouseEvent) => {
@@ -164,7 +161,6 @@ export class Canvas extends React.Component<Props, State> {
   public setContainer = (el: any) => {
     const { onDrag, onDragEnd, zoom } = this;
     if (el) {
-      this.el = el
       this.setState(state => ({
         width: el.parentNode.offsetWidth,
         height: el.parentNode.offsetHeight,

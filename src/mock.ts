@@ -27,9 +27,9 @@ const generateItems = (count: number = 10, spacing: number = 500): FlatMap =>
    }, {})
 
 const generate = (): FlatMap => {
-  const l = generateItems(100, 5000)
+  const l = generateItems(10, 5000)
   return Object.keys(l).reduce((r, k) => {
-    const c = generateItems(50, 300)
+    const c = generateItems(5, 300)
     Object.keys(c).forEach(ck => {
       c[ck].x = c[ck].x + l[k].x
       c[ck].y = c[ck].y + l[k].y

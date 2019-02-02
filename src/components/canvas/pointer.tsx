@@ -1,3 +1,5 @@
+import * as React from 'react';
+
 export interface Pointer {
   x: number
   y: number
@@ -10,7 +12,7 @@ export interface Delta extends Pointer {
 }
 
 export const getMousePointer = (
-  evt: MouseEvent | MouseWheelEvent
+  evt: MouseEvent | MouseWheelEvent | React.MouseEvent<SVGElement, MouseEvent>
 ): Pointer => ({
   x: evt.pageX,
   y: evt.pageY,

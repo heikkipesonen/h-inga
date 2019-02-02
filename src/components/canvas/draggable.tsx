@@ -1,8 +1,11 @@
 import * as React from "react"
-import { Pointer, getMousePointer, calcDragEvent, calcZoomEvent } from "../pointer"
-import { addEventListener } from "../listener"
-import { Position } from "../../../types/object"
-import { globalState } from '../global-state';
+import { some, none } from 'fp-ts/lib/Option'
+
+import { Pointer, getMousePointer, calcDragEvent, calcZoomEvent } from "./pointer"
+import { addEventListener } from "./listener"
+import { Position } from "./../../types/object"
+import { globalState } from './global-state'
+import { Container } from './objects/container'
 
 interface Props {
   children: React.ReactNode
@@ -21,7 +24,7 @@ interface State {
   lastEvent: Pointer | null
 }
 
-export class Draggable extends React.Component<Props, State> {
+export class Draggable extends React.PureComponent<Props, State> {
   public state: State = {
     onDrag: !!this.props.onDrag,
     lastEvent: this.props.onDrag || null
@@ -30,23 +33,24 @@ export class Draggable extends React.Component<Props, State> {
   public ref: HTMLElement | null = null
   private unbinders: Array<() => void> = []
 
-  public onDragStart = (event: React.MouseEvent<SVGElement, MouseEvent>) => {
-    event.stopPropagation()
-    event.preventDefault()
+  private isInteractive = () => this.props.interactive ? some(true) : none
 
-    if (this.props.interactive) {
-      const position = getMousePointer(event as any)
+  public onDragStart = (event: React.MouseEvent<SVGElement, MouseEvent>) =>
+    this.isInteractive().map(() => {
+      event.stopPropagation()
+      event.preventDefault()
+
+      const position = getMousePointer(event)
 
       this.setState(() => ({
         lastEvent: position,
         onDrag: true
       }))
 
-    }
-  }
+    })
 
-  public onDrag = (event: MouseEvent) => {
-    if (this.props.interactive) {
+  public onDrag = (event: MouseEvent) =>
+    this.isInteractive().map(() => {
       const { lastEvent, onDrag } = this.state
       const { onChange } = this.props
       if (onDrag && lastEvent) {
@@ -65,8 +69,7 @@ export class Draggable extends React.Component<Props, State> {
 
         onChange(nextPosition)
       }
-    }
-  }
+    })
 
   public zoom = (event: MouseWheelEvent) => {
     if (!this.props.interactive || !this.props.scalable) {
@@ -111,9 +114,10 @@ export class Draggable extends React.Component<Props, State> {
   public render() {
     const { children, x, y } = this.props
     const { setContainer } = this
-
-    return <g ref={setContainer} transform={`translate(${x}, ${y})`} onMouseDown={this.onDragStart}>
-        {children}
-      </g>
+    return (
+      <Container x={x} y={y} ref={setContainer} onMouseDown={this.onDragStart}>
+        { children }
+      </Container>
+    )
   }
 }

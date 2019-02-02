@@ -2,7 +2,6 @@ import { CanvasObject, Position } from '../types/object'
 import { State as CanvasState } from '../components/canvas/canvas'
 import { Bounds } from './bounds';
 
-
 export const getCanvasBounds = (s: CanvasState) => new Bounds(
   s.x,
   s.y,

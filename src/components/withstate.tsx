@@ -9,19 +9,19 @@ export interface RenderPropTypes<T> {
   setStateKey: setStateKeyType<T>
 }
 
-interface PropTypes<T> {
+export interface Props<T> {
   state: T
   onChange?: (state: T) => void
   children?: (prop: RenderPropTypes<T>) => ReactNode
 }
 
-export class WithState<T> extends PureComponent<PropTypes<T>, T> {
-  constructor(props: PropTypes<T>) {
+export class WithState<T> extends PureComponent<Props<T>, T> {
+  constructor(props: Props<T>) {
     super(props)
     this.state = props.state
   }
 
-  public componentWillReceiveProps(newProps: PropTypes<T>) {
+  public componentWillReceiveProps(newProps: Props<T>) {
     if (newProps.state !== this.state) {
       this.setState(newProps.state)
     }

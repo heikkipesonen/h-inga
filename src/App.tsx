@@ -4,11 +4,13 @@ import { data } from './mock'
 import { FlatMap } from 'src/types/object';
 import { Project } from 'src/types/project';
 
-import { ModalController } from 'src/components/modal-controller'
-import { Modal } from 'src/components/modal'
 import { Toolbar } from 'src/components/toolbar'
-
+import { Button } from 'src/components/button'
 import { CanvasView } from 'src/components/canvas/canvas-view'
+
+// import { Button } from './components/button'
+import { CreateObjectModal } from './views/create-object-modal'
+import { ModalController } from './components/modal-controller'
 
 import styled from 'styled-components';
 
@@ -45,21 +47,22 @@ export class App extends React.PureComponent<{}, State> {
   //     }
   //   }))
   // }
-
   public render() {
     return (
       <ViewContainer>
-        <Toolbar />
+        <Toolbar>
+          <ModalController>
+            {(controls) => (
+              <>
+                <Button onClick={controls.open}>kissa</Button>
+                <CreateObjectModal modal={controls} />
+              </>
+            )}
+          </ModalController>
+        </Toolbar>
         <div className="canvas-wrapper">
           <CanvasView src={data.objects} />
         </div>
-        <ModalController>
-          {(controls) => (
-            <Modal controls={controls}>
-              kissa
-            </Modal>
-          )}
-        </ModalController>
       </ViewContainer>
     )
   }
