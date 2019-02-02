@@ -10,6 +10,11 @@ interface Props {
 export const ModalContainer = styled.div`
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 9000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
 
   .modal--backdrop {
     position: absolute;
@@ -18,25 +23,29 @@ export const ModalContainer = styled.div`
   }
 
   .modal--container {
-    position: absolute;
-    top: 0; left: auto; right: 0; bottom: 0;
+    position: relative;
     width: 600px;
+    height: 600px;
     max-width: 80vw;
-    height: 100vh;
-    box-shadow: 0px 0px 50px -20px rgba(0,0,0,0.5);
+    max-height: 80vh;
+    box-shadow: 0px 0px 80px -20px rgba(0,0,0,1);
     background-color: white;
+    overflow-y: auto;
   }
 
   .modal--body {
-
+    padding: 24px;
   }
 `
 export class Modal extends React.PureComponent<Props> {
 
-  private handleReject() {
+  private handleReject = () => {
     const { controls } = this.props
-    controls.reject.map(r => r())
+    controls.reject(null)
   }
+
+  private handleClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
+    e.stopPropagation()
 
   public render() {
     const { controls, children } = this.props
@@ -45,7 +54,7 @@ export class Modal extends React.PureComponent<Props> {
       <ModalContainer>
         <div className="modal--backdrop" onClick={this.handleReject} />
         <div className="modal--container">
-          <div className="modal-body">
+          <div className="modal--body" onClick={this.handleClick}>
             {children}
           </div>
         </div>
