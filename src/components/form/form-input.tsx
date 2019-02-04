@@ -5,12 +5,12 @@ import { Input } from './input'
 import { Checkbox } from './checkbox'
 import { Radio } from './radio'
 import { InputContainer, Container, InputMessage } from './input-container'
-import { StringValueKeysOf } from 'src/types/helpers';
+import { KeysOfType, KeysOfTypeWithValueType, ValueOf } from "src/types/helpers"
 
 interface InputProps<T> {
   label: string
   form: Form<T>
-  name: StringValueKeysOf<T, string>
+  name: KeysOfType<T, string>
 }
 
 export class FormInput<T> extends React.PureComponent<InputProps<T>> {
@@ -31,7 +31,7 @@ export class FormInput<T> extends React.PureComponent<InputProps<T>> {
 interface CheckBoxProps<T> {
   label: string
   form: Form<T>
-  name: StringValueKeysOf<T>
+  name: KeysOfTypeWithValueType<T, string, boolean>
 }
 
 export class FormCheckbox<T> extends React.Component<CheckBoxProps<T>> {
@@ -58,17 +58,19 @@ export class FormCheckbox<T> extends React.Component<CheckBoxProps<T>> {
   }
 }
 
-
-interface RadioOption<T, K extends keyof T> {
-  value: Extract<T[K], string>
+interface RadioOption<T> {
+  value: T
   label: string
 }
 
-interface RadioProps<T, K extends keyof T> extends InputProps<T> {
-  options: Array<RadioOption<T, K>>
+interface RadioProps<T, K extends keyof T> {
+  label: string
+  form: Form<T>
+  name: K
+  options: Array<RadioOption<ValueOf<T, K>>>
 }
 
-export class FormRadio<T, K extends Extract<keyof T, string>> extends React.Component<RadioProps<T, K>> {
+export class FormRadio<T, K extends KeysOfTypeWithValueType<T, string, string>> extends React.Component<RadioProps<T, K>> {
   public render() {
     const { form, name, label, options } = this.props
     return (

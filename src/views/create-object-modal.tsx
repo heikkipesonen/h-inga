@@ -10,7 +10,8 @@ interface State {
   name: string
   description: string
   pylly: 'kakka' | 'kissa' | 'juna'
-  majava: string
+  majava: boolean,
+  koira: boolean,
 }
 
 export class CreateObjectModal extends React.PureComponent<
@@ -21,7 +22,8 @@ export class CreateObjectModal extends React.PureComponent<
     name: '',
     description: '',
     pylly: 'juna',
-    majava: ''
+    majava: false,
+    koira: true
   }
 
   public create = () => this.props.modal.open()
@@ -41,9 +43,10 @@ export class CreateObjectModal extends React.PureComponent<
               <FormInput name="description" label="description" form={form} />
 
               <FormCheckbox name="majava" label="pylly" form={form} />
+              <FormCheckbox name="koira" label="pylly" form={form} />
 
               <FormRadio
-                name="pylly"
+                name='pylly'
                 label="pylly"
                 form={form}
                 options={[
@@ -63,8 +66,8 @@ export class CreateObjectModal extends React.PureComponent<
               />
 
               <Layout.Row>
-                <Button onClick={form.submit}>kissa</Button>
-                <Button onClick={form.reset}>koira</Button>
+                <Button onClick={form.submit}>submit</Button>
+                <Button onClick={form.reset}>reset</Button>
               </Layout.Row>
             </>
           )}

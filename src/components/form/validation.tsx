@@ -29,4 +29,4 @@ export const maxLength = (l: number) =>
 
 export const validate = (validations: Validator[]) =>
   (value: ValueType) =>
-    validations.every(v => v(value).map(() => true).getOrElse(false))
+    validations.map(v => v(value))
