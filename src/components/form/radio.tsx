@@ -56,7 +56,7 @@ export const Radio = styled(RadioElement)`
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background-color: #444;
+    background-color: #aaa;
     display: inline-block;
     color: transparent;
   }
@@ -72,9 +72,9 @@ export const Radio = styled(RadioElement)`
     &:after {
       content: "";
       position: absolute;
-      top: 2px; left: 2px; right: 2px; bottom: 2px;
+      top: 6px; left: 6px; right: 6px; bottom: 6px;
       border-radius: 50%;
-      background-color: #d00;
+      background-color: #444;
     }
   }
 `

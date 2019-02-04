@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { fromNullable } from 'fp-ts/lib/Option';
+import { ValueOf } from 'src/types/helpers';
 
 interface Props<T> {
   model: T,
@@ -10,16 +11,15 @@ interface Props<T> {
 
 export class Form<T> extends React.PureComponent<Props<T>, T> {
 
-  public state =this.props.model
+  public state: T = this.props.model
 
-  public getValue = (name: any) =>
+  public getValue = <K extends keyof T>(name: K): ValueOf<T, K> =>
     this.state[name]
+
 
   public componentDidUpdate = () =>
     fromNullable(this.props.onChange).map((c) => c(this.state))
 
-  // TODO: type this
-  // fucks up Forminput onChange if typed... (╯°□°）╯︵ ┻━┻
   public updateKey = <K extends keyof T>(key: keyof T, value: T[K]) =>
     this.setState((state: T) => ({
       ...state,

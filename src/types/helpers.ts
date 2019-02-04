@@ -2,7 +2,6 @@ export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>
 
 export type Subtract<T, K> = Omit<T, keyof K>
 
-
 export type TypedValuesOf<T, U = string> = Extract<T[keyof T], U>
 
 export type KeysOfType<T, KeyType> = Extract<keyof T, KeyType>

@@ -1,6 +1,11 @@
 import { Checkbox } from './checkbox'
 import { Radio } from './radio'
-import { FormInput, FormCheckbox, FormRadio } from './form-input'
+import {
+  FormInput,
+  FormCheckbox,
+  FormRadio,
+  FormCheckboxGroup
+} from "./form-input"
 import { Form } from './form'
 
 export {
@@ -9,5 +14,6 @@ export {
   FormInput,
   FormRadio,
   FormCheckbox,
+  FormCheckboxGroup,
   Form
 }

@@ -17,6 +17,10 @@ export const Container = styled.div`
     position: absolute;
     bottom: 0; left: 0; right: 0;
   }
+
+  .input-group--title {
+    margin-bottom: 0.5rem;
+  }
 `
 
 interface LabelProps {
@@ -51,6 +55,29 @@ export class InputContainer extends React.PureComponent<Props> {
     return (
       <Container>
         <InputLabel id={this.id} label={label} />
+        {children}
+        <InputMessage message={message} />
+      </Container>
+    )
+  }
+}
+
+
+export interface InputGroupProps {
+  title: string
+  children: React.ReactNode
+  message?: string
+}
+
+export class InputGroup extends React.PureComponent<InputGroupProps> {
+  public render() {
+    const { children, title, message } = this.props
+
+    return (
+      <Container>
+        <div className="input-group--title">
+          { title }
+        </div>
         {children}
         <InputMessage message={message} />
       </Container>

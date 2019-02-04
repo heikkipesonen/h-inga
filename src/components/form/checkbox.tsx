@@ -55,7 +55,7 @@ export const Checkbox = styled(CheckboxElement)`
     top: 0; left: 0;
     width: 32px;
     height: 32px;
-    background-color: #444;
+    background-color: #aaa;
     display: inline-block;
     color: transparent;
   }
@@ -69,7 +69,7 @@ export const Checkbox = styled(CheckboxElement)`
 
   input:checked + .tick {
     color: white;
-    background-color: #d00;
+    background-color: #444;
     line-height: 32px;
     text-align: center;
     font-size: 1.5rem;
